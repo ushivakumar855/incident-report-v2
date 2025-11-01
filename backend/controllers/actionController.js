@@ -1,7 +1,4 @@
-// =============================================
-// Action Controller
-// Handles action logging operations
-// =============================================
+
 
 const db = require('../config/db');
 

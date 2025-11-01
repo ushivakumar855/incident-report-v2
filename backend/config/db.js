@@ -1,7 +1,4 @@
-// =============================================
-// Database Configuration for MySQL
-// Adapted for existing 'myapp' database
-// =============================================
+
 
 const mysql = require('mysql2');
 const dotenv = require('dotenv');

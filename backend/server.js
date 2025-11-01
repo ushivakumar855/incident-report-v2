@@ -1,8 +1,7 @@
 // =============================================
 // Incident Reporting System - Backend Server
 // Database: myapp (MySQL)
-// User: ushivakumar855
-// =============================================
+
 
 const express = require('express');
 const cors = require('cors');
@@ -71,7 +70,7 @@ app.get('/', (req, res) => {
     res.json({
         message: 'Incident Reporting System API',
         version: '1.0.0',
-        author: 'ushivakumar855',
+        author: 'Varshini',
         database: 'myapp',
         timestamp: req.requestTime
     });
@@ -184,8 +183,8 @@ const server = app.listen(PORT, () => {
     console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Server URL: http://localhost:${PORT}`);
     console.log(`📡 API URL: http://localhost:${PORT}/api`);
-    console.log(`🗄️  Database: myapp`);
-    console.log(`👤 User: ushivakumar855`);
+    console.log(`🗄️  Database: incident_db1`);
+    console.log(`👤 User: Varshini`);
     console.log('==========================================');
 });
 

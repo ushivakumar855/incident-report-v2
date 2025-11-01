@@ -1,8 +1,4 @@
-// =============================================
-// Report Details Page
-// Author: ushivakumar855
-// Date: 2025-10-10 07:49:19 UTC
-// =============================================
+
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -118,7 +114,7 @@ const ReportDetails = () => {
             {/* Report Header */}
             <Card className="mb-4 shadow">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 className="mb-0">Ì≥ã Report #{report.ReportID}</h3>
+                    <h3 className="mb-0">ÔøΩÔøΩÔøΩ Report #{report.ReportID}</h3>
                     <StatusBadge status={report.Status} />
                 </Card.Header>
                 <Card.Body>
@@ -184,7 +180,7 @@ const ReportDetails = () => {
             {/* Actions Section */}
             <Card className="mb-4 shadow">
                 <Card.Header className="bg-info text-white d-flex justify-content-between align-items-center">
-                    <h4 className="mb-0">Ì≥ù Actions Taken ({report.actions?.length || 0})</h4>
+                    <h4 className="mb-0">ÔøΩÔøΩÔøΩ Actions Taken ({report.actions?.length || 0})</h4>
                     <Button 
                         variant="light" 
                         size="sm"

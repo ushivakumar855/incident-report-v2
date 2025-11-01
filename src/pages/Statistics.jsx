@@ -1,8 +1,4 @@
-// =============================================
-// Statistics Page
-// Author: ushivakumar855
-// Date: 2025-10-10 07:49:19 UTC
-// =============================================
+
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, ProgressBar } from 'react-bootstrap';
@@ -46,7 +42,7 @@ const Statistics = () => {
 
     return (
         <Container className="my-5">
-            <h2 className="mb-4">í³Š System Statistics</h2>
+            <h2 className="mb-4">ï¿½ï¿½ï¿½ System Statistics</h2>
 
             {/* Overview Cards */}
             <Row className="mb-4">
@@ -91,7 +87,7 @@ const Statistics = () => {
             {/* Status Distribution */}
             <Card className="mb-4 shadow">
                 <Card.Header className="bg-primary text-white">
-                    <h5 className="mb-0">í³ˆ Reports by Status</h5>
+                    <h5 className="mb-0">ï¿½ï¿½ï¿½ Reports by Status</h5>
                 </Card.Header>
                 <Card.Body>
                     <Table striped bordered hover responsive>
@@ -128,7 +124,7 @@ const Statistics = () => {
             {/* Category Distribution */}
             <Card className="shadow">
                 <Card.Header className="bg-success text-white">
-                    <h5 className="mb-0">í³Š Reports by Category</h5>
+                    <h5 className="mb-0">ï¿½ï¿½ï¿½ Reports by Category</h5>
                 </Card.Header>
                 <Card.Body>
                     <Table striped bordered hover responsive>
@@ -167,7 +163,7 @@ const Statistics = () => {
                 <Col md={6}>
                     <Card className="shadow">
                         <Card.Header className="bg-info text-white">
-                            <h5 className="mb-0">í¾¯ Key Metrics</h5>
+                            <h5 className="mb-0">ï¿½ï¿½ï¿½ Key Metrics</h5>
                         </Card.Header>
                         <Card.Body>
                             <div className="d-flex justify-content-between mb-2">

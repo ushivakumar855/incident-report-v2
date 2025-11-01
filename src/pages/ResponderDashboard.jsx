@@ -1,8 +1,4 @@
-// =============================================
-// Responder Dashboard Page
-// Author: ushivakumar855
-// Date: 2025-10-10 07:49:19 UTC
-// =============================================
+
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Button, Form } from 'react-bootstrap';
@@ -47,7 +43,7 @@ const ResponderDashboard = () => {
         <Container className="my-5">
             <Row className="mb-4">
                 <Col>
-                    <h2>í±® Responder Dashboard</h2>
+                    <h2>ï¿½ï¿½ï¿½ Responder Dashboard</h2>
                     <p className="text-muted">
                         Manage and respond to incident reports
                     </p>
@@ -111,7 +107,7 @@ const ResponderDashboard = () => {
             {/* Reports Table */}
             <Card className="shadow">
                 <Card.Header>
-                    <h5 className="mb-0">í³‹ Reports - {selectedStatus} ({reports.length})</h5>
+                    <h5 className="mb-0">ï¿½ï¿½ï¿½ Reports - {selectedStatus} ({reports.length})</h5>
                 </Card.Header>
                 <Card.Body>
                     {reports.length === 0 ? (
@@ -177,7 +173,7 @@ const ResponderDashboard = () => {
             {/* Responders List */}
             <Card className="shadow mt-4">
                 <Card.Header>
-                    <h5 className="mb-0">í±¥ Active Responders ({responders.length})</h5>
+                    <h5 className="mb-0">ï¿½ï¿½ï¿½ Active Responders ({responders.length})</h5>
                 </Card.Header>
                 <Card.Body>
                     <Table responsive striped>

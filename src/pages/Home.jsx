@@ -1,9 +1,3 @@
-// =============================================
-// Home Page
-// Author: ushivakumar855
-// Date: 2025-10-10
-// =============================================
-
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -34,13 +28,13 @@ const Home = () => {
             {/* Hero Section */}
             <div className="text-center mb-5">
                 <h1 className="display-4 fw-bold mb-3">
-                    Ì∫® Incident Reporting System
+                    ÔøΩÔøΩÔøΩ Incident Reporting System
                 </h1>
                 <p className="lead text-muted">
                     Report issues, track progress, and ensure accountability
                 </p>
                 <p className="text-muted">
-                    Welcome, <strong>ushivakumar855</strong>
+                    Welcome, <strong>Varshini</strong>
                 </p>
             </div>
 
@@ -95,7 +89,7 @@ const Home = () => {
             {/* Statistics Dashboard */}
             {!loading && stats && (
                 <div>
-                    <h3 className="mb-4">Ì≥ä Quick Statistics</h3>
+                    <h3 className="mb-4">ÔøΩÔøΩÔøΩ Quick Statistics</h3>
                     <Row>
                         <Col md={3} className="mb-3">
                             <Card className="text-center bg-primary text-white">
@@ -149,7 +143,7 @@ const Home = () => {
                     <Col md={6} className="mb-3">
                         <Card>
                             <Card.Body>
-                                <h5>Ì¥í Anonymous Reporting</h5>
+                                <h5>ÔøΩÔøΩÔøΩ Anonymous Reporting</h5>
                                 <p className="text-muted">
                                     Submit reports without revealing your identity for sensitive issues
                                 </p>
@@ -160,7 +154,7 @@ const Home = () => {
                     <Col md={6} className="mb-3">
                         <Card>
                             <Card.Body>
-                                <h5>Ì≥ù Action Tracking</h5>
+                                <h5>ÔøΩÔøΩÔøΩ Action Tracking</h5>
                                 <p className="text-muted">
                                     Monitor all actions taken by responders with timestamps
                                 </p>
@@ -171,7 +165,7 @@ const Home = () => {
                     <Col md={6} className="mb-3">
                         <Card>
                             <Card.Body>
-                                <h5>ÌæØ Category Management</h5>
+                                <h5>ÔøΩÔøΩÔøΩ Category Management</h5>
                                 <p className="text-muted">
                                     Reports are routed to appropriate departments automatically
                                 </p>
@@ -182,7 +176,7 @@ const Home = () => {
                     <Col md={6} className="mb-3">
                         <Card>
                             <Card.Body>
-                                <h5>Ì≥ä Real-time Updates</h5>
+                                <h5>ÔøΩÔøΩÔøΩ Real-time Updates</h5>
                                 <p className="text-muted">
                                     Get instant updates on report status and actions
                                 </p>

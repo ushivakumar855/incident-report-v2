@@ -1,8 +1,4 @@
-// =============================================
-// View Reports Page
-// Author: ushivakumar855
-// Date: 2025-10-10
-// =============================================
+
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Alert } from 'react-bootstrap';
@@ -70,7 +66,7 @@ const ViewReports = () => {
 
     return (
         <Container className="my-5">
-            <h2 className="mb-4">í³‹ All Reports</h2>
+            <h2 className="mb-4">ï¿½ï¿½ï¿½ All Reports</h2>
 
             <FilterBar 
                 filters={filters}

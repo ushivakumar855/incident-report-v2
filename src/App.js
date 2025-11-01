@@ -1,9 +1,3 @@
-// =============================================
-// Main App Component
-// Author: ushivakumar855
-// Date: 2025-10-10 07:49:19 UTC
-// =============================================
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -34,7 +28,7 @@ function App() {
                 
                 <footer className="bg-dark text-white text-center py-3 mt-5">
                     <p className="mb-0">
-                        © 2025 Incident Reporting System | Developed by <strong>ushivakumar855</strong>
+                        © 2025 Incident Reporting System | Developed by <strong>Varshini</strong>
                     </p>
                     <small className="text-muted">Database: myapp | Version 1.0.0</small>
                 </footer>
