@@ -10,13 +10,12 @@ Git
 
 
 Step 1: Clone the Repository
-git clone https://github.com/ushivakumar855/dbms-incident-report.git
 cd dbms-incident-report
 
 
 Step 2: Setup the Database
-CREATE DATABASE myapp;
-USE myapp;
+CREATE DATABASE incident_db1;
+USE incident_db1;
 
 source <path of .sql file>;
 

@@ -1,8 +1,4 @@
-// =============================================
-// Helper Functions (UPDATED)
-// Author: ushivakumar855
-// Date: 2025-10-10 07:49:19 UTC
-// =============================================
+
 
 // Format date to readable format
 export const formatDate = (dateString) => {

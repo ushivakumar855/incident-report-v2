@@ -1,10 +1,3 @@
-// =============================================
-// API Service - Axios Configuration
-// Backend: http://localhost:5000/api
-// Author: ushivakumar855
-// Date: 2025-10-10
-// =============================================
-
 import axios from 'axios';
 
 // Create axios instance with default config
