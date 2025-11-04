@@ -183,6 +183,7 @@ const ResponderDashboard = () => {
                                 <th>Role</th>
                                 <th>Contact</th>
                                 <th>Actions Taken</th>
+                                <th>Total Resolved</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -194,6 +195,11 @@ const ResponderDashboard = () => {
                                     <td>
                                         <Badge bg="info">
                                             {responder.ActionCount || 0} actions
+                                        </Badge>
+                                    </td>
+                                    <td>
+                                        <Badge bg="success">
+                                            {responder.TotalResolved || 0} resolved
                                         </Badge>
                                     </td>
                                 </tr>
