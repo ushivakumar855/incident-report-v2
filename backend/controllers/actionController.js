@@ -10,7 +10,7 @@ exports.getAllActions = async (req, res, next) => {
         const [actions] = await db.query(`
             SELECT 
                 a.*,
-                r.ResponderName,
+                r.Name AS ResponderName,
                 r.Role AS ResponderRole,
                 rep.Description AS ReportDescription,
                 rep.Status AS ReportStatus

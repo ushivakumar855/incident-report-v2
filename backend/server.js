@@ -70,8 +70,8 @@ app.get('/', (req, res) => {
     res.json({
         message: 'Incident Reporting System API',
         version: '1.0.0',
-        author: 'Varshini',
-        database: 'myapp',
+        author: 'U Shivakumar',
+        database: 'incident_db1',
         timestamp: req.requestTime
     });
 });
@@ -184,7 +184,7 @@ const server = app.listen(PORT, () => {
     console.log(`🌐 Server URL: http://localhost:${PORT}`);
     console.log(`📡 API URL: http://localhost:${PORT}/api`);
     console.log(`🗄️  Database: incident_db1`);
-    console.log(`👤 User: Varshini`);
+    console.log(`👤 User: U Shivakumar`);
     console.log('==========================================');
 });
 

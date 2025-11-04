@@ -10,10 +10,12 @@ exports.getAllResponders = async (req, res, next) => {
         const [responders] = await db.query(`
             SELECT 
                 r.*,
-                COUNT(a.actionid) AS ActionCount
+                COUNT(a.actionid) AS ActionCount,
+                r.TotalResolved,
+                (SELECT COUNT(*) FROM reports WHERE ResponderID = r.ResponderID AND Status IN ('Pending', 'In Progress', 'Under Review')) AS ActiveReports
             FROM responders r
             LEFT JOIN actionstaken a ON r.ResponderID = a.responderid
-            GROUP BY r.ResponderID
+            GROUP BY r.ResponderID, r.Name, r.Role, r.ContactInfo, r.Department, r.IsAvailable, r.TotalResolved, r.CreatedAt
             ORDER BY r.Name
         `);
         

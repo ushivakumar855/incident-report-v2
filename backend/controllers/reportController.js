@@ -229,7 +229,7 @@ exports.updateReportStatus = async (req, res, next) => {
             });
         }
         
-        // Check if report exists
+        // Check if report exists and get current status
         const [reports] = await db.query(
             'SELECT * FROM reports WHERE ReportID = ?',
             [id]
@@ -242,11 +242,29 @@ exports.updateReportStatus = async (req, res, next) => {
             });
         }
         
-        // Update status
-        await db.query(
-            'UPDATE reports SET Status = ? WHERE ReportID = ?',
-            [status, id]
-        );
+        const oldStatus = reports[0].Status;
+        const responderId = reports[0].ResponderID;
+        
+        // Update status and set ResolvedAt timestamp if resolving
+        let updateQuery = 'UPDATE reports SET Status = ?';
+        const updateParams = [status];
+        
+        if (status === 'Resolved' && oldStatus !== 'Resolved') {
+            updateQuery += ', ResolvedAt = NOW()';
+        }
+        
+        updateQuery += ' WHERE ReportID = ?';
+        updateParams.push(id);
+        
+        await db.query(updateQuery, updateParams);
+        
+        // If transitioning to Resolved status, increment TotalResolved for the responder
+        if (status === 'Resolved' && oldStatus !== 'Resolved' && responderId) {
+            await db.query(
+                'UPDATE responders SET TotalResolved = TotalResolved + 1 WHERE ResponderID = ?',
+                [responderId]
+            );
+        }
         
         // Get updated report
         const [updatedReport] = await db.query(`

@@ -316,10 +316,22 @@ BEGIN
                 CONCAT('Status changed from ', OLD.Status, ' to ', NEW.Status));
     END IF;
     
-    IF NEW.Status = 'Resolved' AND OLD.Status != 'Resolved' THEN
+    -- Increment TotalResolved only when status changes to 'Resolved' and ResponderID is not NULL
+    IF NEW.Status = 'Resolved' AND OLD.Status != 'Resolved' AND NEW.ResponderID IS NOT NULL THEN
         UPDATE responders 
         SET TotalResolved = TotalResolved + 1 
         WHERE ResponderID = NEW.ResponderID;
+    END IF;
+END //
+
+-- Trigger 3b: Before Update on Reports (Set ResolvedAt timestamp)
+CREATE TRIGGER trg_BeforeUpdateReport
+BEFORE UPDATE ON reports
+FOR EACH ROW
+BEGIN
+    -- Set ResolvedAt timestamp when status changes to 'Resolved'
+    IF NEW.Status = 'Resolved' AND OLD.Status != 'Resolved' AND NEW.ResolvedAt IS NULL THEN
+        SET NEW.ResolvedAt = NOW();
     END IF;
 END //
 
