@@ -75,14 +75,6 @@ function App() {
                         } 
                     />
 
-                    <Route 
-                        path="/responder" 
-                        element={
-                            <ProtectedRoute allowedRoles={['responder']}>
-                                <ResponderDashboard />
-                            </ProtectedRoute>
-                        } 
-                    />
 
                     {/* Common Routes - Accessible by both roles */}
                     <Route 
