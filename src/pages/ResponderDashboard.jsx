@@ -9,6 +9,7 @@ import { Container, Row, Col, Card, Table, Badge, Button, Form } from 'react-boo
 import { Link } from 'react-router-dom';
 import { reportAPI, responderAPI } from '../services/api';
 import { formatDate, handleAPIError } from '../utils/helpers';
+import { RESPONDER_STATUS_OPTIONS } from '../utils/constants';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import DashboardHeader from '../components/DashboardHeader';
@@ -137,6 +138,26 @@ const ResponderDashboard = () => {
                         <Card className="shadow-sm">
                             <Card.Body>
                                 <h5 className="mb-3">Quick Actions</h5>
+                                <Row className="mb-3">
+                                    <Col md={4}>
+                                        <Form.Group>
+                                            <Form.Label>
+                                                <FaFilter className="me-2" />
+                                                Filter by Status
+                                            </Form.Label>
+                                            <Form.Select
+                                                value={selectedStatus}
+                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                            >
+                                                {RESPONDER_STATUS_OPTIONS.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
                                 <div className="d-flex gap-3 flex-wrap">
                                     <Button 
                                         onClick={handleViewAllReports}
@@ -323,26 +344,6 @@ const ResponderDashboard = () => {
                 {/* Filter and Current Status Reports - Always Visible */}
                 {!showAllReports && !showStatistics && !showResponders && (
                     <>
-                        <Row className="mb-3">
-                            <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>
-                                        <FaFilter className="me-2" />
-                                        Filter by Status
-                                    </Form.Label>
-                                    <Form.Select
-                                        value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
-                                    >
-                                        <option value="Pending">Pending</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Resolved">Resolved</option>
-                                        <option value="Closed">Closed</option>
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
                         <Card className="shadow">
                             <Card.Header>
                                 <h5 className="mb-0">📋 Reports - {selectedStatus} ({reports.length})</h5>

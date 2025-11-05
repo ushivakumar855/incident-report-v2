@@ -50,6 +50,8 @@ CREATE TABLE reports (
     CategoryID INT NOT NULL,
     UserID INT NULL,  -- NULL for anonymous reports
     Description TEXT NOT NULL,
+    Location VARCHAR(200),
+    Priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
     Status ENUM('Pending', 'In Progress', 'Under Review', 'Resolved', 'Closed') DEFAULT 'Pending',
     Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     ResolvedAt DATETIME NULL,
@@ -58,6 +60,7 @@ CREATE TABLE reports (
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE SET NULL,
     FOREIGN KEY (ResponderID) REFERENCES responders(ResponderID) ON DELETE SET NULL,
     INDEX idx_status (Status),
+    INDEX idx_priority (Priority),
     INDEX idx_timestamp (Timestamp),
     INDEX idx_category (CategoryID)
 ) ENGINE=InnoDB;

@@ -1,5 +1,6 @@
 // =============================================
-// Submit Report Page
+// Submit Report Page/Component
+// Can be used as a standalone page or inline component
 // Author: ushivakumar855
 // Date: 2025-10-10
 // =============================================
@@ -9,9 +10,10 @@ import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { reportAPI, categoryAPI, userAPI } from '../services/api';
 import { handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
+import { PRIORITY_OPTIONS, DEFAULT_PRIORITY } from '../utils/constants';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-const SubmitReport = () => {
+const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,6 +22,8 @@ const SubmitReport = () => {
     const [formData, setFormData] = useState({
         categoryId: '',
         description: '',
+        location: '',
+        priority: DEFAULT_PRIORITY,
         isAnonymous: false,
         pseudonym: '',
         campusDept: '',
@@ -80,6 +84,8 @@ const SubmitReport = () => {
                 categoryId: formData.categoryId,
                 userId: userId,
                 description: formData.description,
+                location: formData.location ? formData.location.trim() : null,
+                priority: formData.priority,
                 isAnonymous: formData.isAnonymous
             };
 
@@ -87,10 +93,26 @@ const SubmitReport = () => {
             
             showSuccessToast('Report submitted successfully!');
             
-            // Navigate to report details
-            setTimeout(() => {
-                navigate(`/reports/${response.data.data.ReportID}`);
-            }, 1500);
+            // If inline, call onSubmitSuccess callback
+            if (inline && onSubmitSuccess) {
+                onSubmitSuccess(response.data.data);
+                // Reset form
+                setFormData({
+                    categoryId: '',
+                    description: '',
+                    location: '',
+                    priority: DEFAULT_PRIORITY,
+                    isAnonymous: false,
+                    pseudonym: '',
+                    campusDept: '',
+                    optionalContact: ''
+                });
+            } else {
+                // Navigate to report details
+                setTimeout(() => {
+                    navigate(`/reports/${response.data.data.ReportID}`);
+                }, 1500);
+            }
 
         } catch (error) {
             showErrorToast(handleAPIError(error));
@@ -100,14 +122,191 @@ const SubmitReport = () => {
     };
 
     if (loading) {
-        return <LoadingSpinner message="Loading categories..." />;
+        return inline ? (
+            <div className="text-center py-3">
+                <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        ) : (
+            <LoadingSpinner message="Loading categories..." />
+        );
     }
 
+    const formContent = (
+        <Form onSubmit={handleSubmit}>
+            {/* Category Selection */}
+            <Form.Group className="mb-3">
+                <Form.Label>Category <span className="text-danger">*</span></Form.Label>
+                <Form.Select
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    required
+                >
+                    <option value="">Select a category...</option>
+                    {categories.map(category => (
+                        <option key={category.CategoryID} value={category.CategoryID}>
+                            {category.Name} - {category.Role}
+                        </option>
+                    ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                    Choose the category that best describes your incident
+                </Form.Text>
+            </Form.Group>
+
+            {/* Description */}
+            <Form.Group className="mb-3">
+                <Form.Label>Description <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                    as="textarea"
+                    rows={5}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Describe the incident in detail..."
+                    required
+                />
+                <Form.Text className="text-muted">
+                    Provide as much detail as possible to help us address the issue effectively
+                </Form.Text>
+            </Form.Group>
+
+            {/* Location (Optional) */}
+            <Form.Group className="mb-3">
+                <Form.Label>Location (Optional)</Form.Label>
+                <Form.Control
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Building A - Floor 3, Library - 2nd Floor"
+                />
+                <Form.Text className="text-muted">
+                    Specify the location where the incident occurred
+                </Form.Text>
+            </Form.Group>
+
+            {/* Priority */}
+            <Form.Group className="mb-3">
+                <Form.Label>Priority <span className="text-danger">*</span></Form.Label>
+                <Form.Select
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleChange}
+                    required
+                >
+                    {PRIORITY_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                    Select the priority level based on the severity of the incident
+                </Form.Text>
+            </Form.Group>
+
+            {/* Anonymous Checkbox */}
+            <Form.Group className="mb-3">
+                <Form.Check
+                    type="checkbox"
+                    name="isAnonymous"
+                    label="Submit anonymously (no contact information will be collected)"
+                    checked={formData.isAnonymous}
+                    onChange={handleChange}
+                />
+            </Form.Group>
+
+            {/* Contact Information (shown if not anonymous) */}
+            {!formData.isAnonymous && (
+                <Card className="mb-3 bg-light">
+                    <Card.Body>
+                        <h5 className="mb-3">👤 Your Information (Optional)</h5>
+                        
+                        <Form.Group className="mb-3">
+                            <Form.Label>Name/Pseudonym</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="pseudonym"
+                                value={formData.pseudonym}
+                                onChange={handleChange}
+                                placeholder="e.g., JohnDoe"
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Department</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="campusDept"
+                                value={formData.campusDept}
+                                onChange={handleChange}
+                                placeholder="e.g., Computer Science"
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Contact Information</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="optionalContact"
+                                value={formData.optionalContact}
+                                onChange={handleChange}
+                                placeholder="Email or phone number"
+                            />
+                        </Form.Group>
+                    </Card.Body>
+                </Card>
+            )}
+
+            {/* Submit Button */}
+            <div className="d-grid gap-2">
+                <Button 
+                    type="submit" 
+                    variant="primary" 
+                    size="lg"
+                    disabled={submitting}
+                >
+                    {submitting ? 'Submitting...' : 'Submit Report'}
+                </Button>
+                <Button 
+                    type="button" 
+                    variant="outline-secondary"
+                    onClick={() => {
+                        if (inline && onCancel) {
+                            onCancel();
+                        } else {
+                            navigate('/');
+                        }
+                    }}
+                >
+                    Cancel
+                </Button>
+            </div>
+        </Form>
+    );
+
+    // If inline mode, return just the form without container/card
+    if (inline) {
+        return (
+            <>
+                <Alert variant="info" className="mb-3">
+                    <strong>ℹ️ Note:</strong> You can submit reports anonymously or with your contact information.
+                    All reports are confidential and handled professionally.
+                </Alert>
+                {formContent}
+            </>
+        );
+    }
+
+    // Full page mode with container and card
     return (
         <Container className="my-5">
             <Card className="shadow">
                 <Card.Header className="bg-primary text-white">
-                    <h3 className="mb-0">��� Submit New Report</h3>
+                    <h3 className="mb-0">📝 Submit New Report</h3>
                 </Card.Header>
                 <Card.Body>
                     <Alert variant="info">
@@ -115,117 +314,7 @@ const SubmitReport = () => {
                         All reports are confidential and handled professionally.
                     </Alert>
 
-                    <Form onSubmit={handleSubmit}>
-                        {/* Category Selection */}
-                        <Form.Group className="mb-3">
-                            <Form.Label>Category <span className="text-danger">*</span></Form.Label>
-                            <Form.Select
-                                name="categoryId"
-                                value={formData.categoryId}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Select a category...</option>
-                                {categories.map(category => (
-                                    <option key={category.CategoryID} value={category.CategoryID}>
-                                        {category.Name} - {category.Role}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                            <Form.Text className="text-muted">
-                                Choose the category that best describes your incident
-                            </Form.Text>
-                        </Form.Group>
-
-                        {/* Description */}
-                        <Form.Group className="mb-3">
-                            <Form.Label>Description <span className="text-danger">*</span></Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={5}
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                placeholder="Describe the incident in detail..."
-                                required
-                            />
-                            <Form.Text className="text-muted">
-                                Provide as much detail as possible to help us address the issue effectively
-                            </Form.Text>
-                        </Form.Group>
-
-                        {/* Anonymous Checkbox */}
-                        <Form.Group className="mb-3">
-                            <Form.Check
-                                type="checkbox"
-                                name="isAnonymous"
-                                label="Submit anonymously (no contact information will be collected)"
-                                checked={formData.isAnonymous}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-
-                        {/* Contact Information (shown if not anonymous) */}
-                        {!formData.isAnonymous && (
-                            <Card className="mb-3 bg-light">
-                                <Card.Body>
-                                    <h5 className="mb-3">��� Your Information (Optional)</h5>
-                                    
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Name/Pseudonym</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            name="pseudonym"
-                                            value={formData.pseudonym}
-                                            onChange={handleChange}
-                                            placeholder="e.g., JohnDoe"
-                                        />
-                                    </Form.Group>
-
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Department</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            name="campusDept"
-                                            value={formData.campusDept}
-                                            onChange={handleChange}
-                                            placeholder="e.g., Computer Science"
-                                        />
-                                    </Form.Group>
-
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Contact Information</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            name="optionalContact"
-                                            value={formData.optionalContact}
-                                            onChange={handleChange}
-                                            placeholder="Email or phone number"
-                                        />
-                                    </Form.Group>
-                                </Card.Body>
-                            </Card>
-                        )}
-
-                        {/* Submit Button */}
-                        <div className="d-grid gap-2">
-                            <Button 
-                                type="submit" 
-                                variant="primary" 
-                                size="lg"
-                                disabled={submitting}
-                            >
-                                {submitting ? 'Submitting...' : 'Submit Report'}
-                            </Button>
-                            <Button 
-                                type="button" 
-                                variant="outline-secondary"
-                                onClick={() => navigate('/')}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </Form>
+                    {formContent}
                 </Card.Body>
             </Card>
         </Container>

@@ -256,16 +256,16 @@ const ReportDetails = () => {
                     {report.actions && report.actions.length > 0 ? (
                         <ListGroup>
                             {report.actions.map((action, index) => (
-                                <ListGroup.Item key={action.actionid}>
+                                <ListGroup.Item key={action.ActionID || action.actionid || index}>
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 className="mb-1">
                                                 <Badge bg="secondary">#{index + 1}</Badge>{' '}
                                                 {action.ResponderName} - {action.ResponderRole}
                                             </h6>
-                                            <p className="mb-1">{action.actiondescription}</p>
+                                            <p className="mb-1">{action.ActionDescription || action.actiondescription || 'No description provided'}</p>
                                             <small className="text-muted">
-                                                {formatDate(action.timestamp)}
+                                                {formatDate(action.Timestamp || action.timestamp)}
                                             </small>
                                         </div>
                                     </div>
