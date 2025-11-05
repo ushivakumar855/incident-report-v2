@@ -14,6 +14,7 @@ import ReportCard from '../components/ReportCard';
 import StatusBadge from '../components/StatusBadge';
 import DashboardHeader from '../components/DashboardHeader';
 import { StatisticsCards, DetailedStatistics } from '../components/StatisticsCards';
+import SubmitReport from './SubmitReport';
 import { FaPlus, FaList, FaChartBar, FaFilter } from 'react-icons/fa';
 
 const UserDashboard = () => {
@@ -29,6 +30,7 @@ const UserDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [showAllReports, setShowAllReports] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
+    const [showSubmitForm, setShowSubmitForm] = useState(false);
     const [filterStatus, setFilterStatus] = useState('All');
 
     useEffect(() => {
@@ -71,6 +73,7 @@ const UserDashboard = () => {
     const handleViewAllReports = () => {
         setShowAllReports(!showAllReports);
         setShowStatistics(false);
+        setShowSubmitForm(false);
         // Refresh data when viewing all reports
         if (!showAllReports) {
             refreshData();
@@ -80,6 +83,18 @@ const UserDashboard = () => {
     const handleViewStatistics = () => {
         setShowStatistics(!showStatistics);
         setShowAllReports(false);
+        setShowSubmitForm(false);
+    };
+
+    const handleToggleSubmitForm = () => {
+        setShowSubmitForm(!showSubmitForm);
+        setShowAllReports(false);
+        setShowStatistics(false);
+    };
+
+    const handleSubmitSuccess = (newReport) => {
+        setShowSubmitForm(false);
+        refreshData();
     };
 
     const filteredReports = filterStatus === 'All' 
@@ -126,14 +141,33 @@ const UserDashboard = () => {
                         <Card className="shadow-sm">
                             <Card.Body>
                                 <h5 className="mb-3">Quick Actions</h5>
+                                <Row className="mb-3">
+                                    <Col md={4}>
+                                        <Form.Group>
+                                            <Form.Label>
+                                                <FaFilter className="me-2" />
+                                                Filter by Status
+                                            </Form.Label>
+                                            <Form.Select
+                                                value={filterStatus}
+                                                onChange={(e) => setFilterStatus(e.target.value)}
+                                            >
+                                                <option value="All">All Status</option>
+                                                <option value="Pending">Pending</option>
+                                                <option value="In Progress">In Progress</option>
+                                                <option value="Resolved">Resolved</option>
+                                                <option value="Closed">Closed</option>
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
                                 <div className="d-flex gap-3 flex-wrap">
                                     <Button 
-                                        as={Link} 
-                                        to="/submit" 
-                                        variant="primary"
+                                        onClick={handleToggleSubmitForm}
+                                        variant={showSubmitForm ? "primary" : "outline-primary"}
                                         className="d-flex align-items-center gap-2"
                                     >
-                                        <FaPlus /> Submit New Report
+                                        <FaPlus /> {showSubmitForm ? 'Hide' : 'Submit New Report'}
                                     </Button>
                                     <Button 
                                         onClick={handleViewAllReports}
@@ -166,6 +200,33 @@ const UserDashboard = () => {
                     }}
                 />
 
+                {/* Submit Report Form - Shown when button clicked */}
+                {showSubmitForm && (
+                    <Row className="mb-4">
+                        <Col>
+                            <Card className="shadow">
+                                <Card.Header className="d-flex justify-content-between align-items-center bg-primary text-white">
+                                    <h5 className="mb-0">📝 Submit New Report</h5>
+                                    <Button 
+                                        variant="light" 
+                                        size="sm"
+                                        onClick={() => setShowSubmitForm(false)}
+                                    >
+                                        Close
+                                    </Button>
+                                </Card.Header>
+                                <Card.Body>
+                                    <SubmitReport 
+                                        inline={true} 
+                                        onSubmitSuccess={handleSubmitSuccess}
+                                        onCancel={() => setShowSubmitForm(false)}
+                                    />
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
+
                 {/* All Reports Section - Shown when button clicked */}
                 {showAllReports && (
                     <Row className="mb-4">
@@ -182,28 +243,6 @@ const UserDashboard = () => {
                                     </Button>
                                 </Card.Header>
                                 <Card.Body>
-                                    {/* Filter Section */}
-                                    <Row className="mb-3">
-                                        <Col md={4}>
-                                            <Form.Group>
-                                                <Form.Label>
-                                                    <FaFilter className="me-2" />
-                                                    Filter by Status
-                                                </Form.Label>
-                                                <Form.Select
-                                                    value={filterStatus}
-                                                    onChange={(e) => setFilterStatus(e.target.value)}
-                                                >
-                                                    <option value="All">All Status</option>
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="In Progress">In Progress</option>
-                                                    <option value="Resolved">Resolved</option>
-                                                    <option value="Closed">Closed</option>
-                                                </Form.Select>
-                                            </Form.Group>
-                                        </Col>
-                                    </Row>
-
                                     {filteredReports.length === 0 ? (
                                         <div className="text-center py-5">
                                             <p className="text-muted mb-3">No reports found.</p>
@@ -286,7 +325,7 @@ const UserDashboard = () => {
                 )}
 
                 {/* Recent Reports - Always Visible */}
-                {!showAllReports && (
+                {!showAllReports && !showSubmitForm && (
                     <Row>
                         <Col>
                             <Card className="shadow">
@@ -304,14 +343,18 @@ const UserDashboard = () => {
                                     {recentReports.length === 0 ? (
                                         <div className="text-center py-5">
                                             <p className="text-muted mb-3">No reports found.</p>
-                                            <Button as={Link} to="/submit" variant="primary">
+                                            <Button onClick={handleToggleSubmitForm} variant="primary">
                                                 Submit Your First Report
                                             </Button>
                                         </div>
                                     ) : (
                                         <div>
                                             {recentReports.map(report => (
-                                                <ReportCard key={report.ReportID} report={report} />
+                                                <ReportCard 
+                                                    key={report.ReportID} 
+                                                    report={report}
+                                                    expandable={true}
+                                                />
                                             ))}
                                         </div>
                                     )}

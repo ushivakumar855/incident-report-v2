@@ -137,6 +137,25 @@ const ResponderDashboard = () => {
                         <Card className="shadow-sm">
                             <Card.Body>
                                 <h5 className="mb-3">Quick Actions</h5>
+                                <Row className="mb-3">
+                                    <Col md={4}>
+                                        <Form.Group>
+                                            <Form.Label>
+                                                <FaFilter className="me-2" />
+                                                Filter by Status
+                                            </Form.Label>
+                                            <Form.Select
+                                                value={selectedStatus}
+                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                            >
+                                                <option value="Pending">Pending</option>
+                                                <option value="In Progress">In Progress</option>
+                                                <option value="Resolved">Resolved</option>
+                                                <option value="Closed">Closed</option>
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
                                 <div className="d-flex gap-3 flex-wrap">
                                     <Button 
                                         onClick={handleViewAllReports}
@@ -323,26 +342,6 @@ const ResponderDashboard = () => {
                 {/* Filter and Current Status Reports - Always Visible */}
                 {!showAllReports && !showStatistics && !showResponders && (
                     <>
-                        <Row className="mb-3">
-                            <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>
-                                        <FaFilter className="me-2" />
-                                        Filter by Status
-                                    </Form.Label>
-                                    <Form.Select
-                                        value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
-                                    >
-                                        <option value="Pending">Pending</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Resolved">Resolved</option>
-                                        <option value="Closed">Closed</option>
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
                         <Card className="shadow">
                             <Card.Header>
                                 <h5 className="mb-0">📋 Reports - {selectedStatus} ({reports.length})</h5>

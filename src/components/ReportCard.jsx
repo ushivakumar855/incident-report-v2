@@ -1,16 +1,19 @@
 // =============================================
 // Report Card Component
+// Enhanced to show expandable details
 // Author: ushivakumar855
 // Date: 2025-10-10
 // =============================================
 
-import React from 'react';
-import { Card, Badge } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Card, Badge, Button, Collapse, ListGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { formatRelativeTime, getStatusColor, truncateText } from '../utils/helpers';
-import { FaUser, FaCalendar, FaFolder, FaComments } from 'react-icons/fa';
+import { formatRelativeTime, formatDate, getStatusColor, truncateText } from '../utils/helpers';
+import { FaUser, FaCalendar, FaFolder, FaComments, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
 
-const ReportCard = ({ report }) => {
+const ReportCard = ({ report, expandable = false }) => {
+    const [expanded, setExpanded] = useState(false);
+
     return (
         <Card className="mb-3 shadow-sm hover-shadow">
             <Card.Body>
@@ -23,9 +26,20 @@ const ReportCard = ({ report }) => {
                             Report #{report.ReportID}
                         </Link>
                     </Card.Title>
-                    <Badge bg={getStatusColor(report.Status)}>
-                        {report.Status}
-                    </Badge>
+                    <div className="d-flex gap-2 align-items-center">
+                        <Badge bg={getStatusColor(report.Status)}>
+                            {report.Status}
+                        </Badge>
+                        {expandable && (
+                            <Button 
+                                size="sm" 
+                                variant="outline-secondary"
+                                onClick={() => setExpanded(!expanded)}
+                            >
+                                {expanded ? <FaChevronUp /> : <FaChevronDown />}
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <Card.Text className="text-muted">
@@ -41,6 +55,18 @@ const ReportCard = ({ report }) => {
                         <FaFolder className="me-1" />
                         {report.CategoryName}
                     </span>
+                    {report.Location && (
+                        <span>
+                            <FaMapMarkerAlt className="me-1" />
+                            {report.Location}
+                        </span>
+                    )}
+                    {report.Priority && (
+                        <span>
+                            <FaExclamationTriangle className="me-1" />
+                            {report.Priority}
+                        </span>
+                    )}
                     <span>
                         <FaCalendar className="me-1" />
                         {formatRelativeTime(report.Timestamp)}
@@ -52,6 +78,82 @@ const ReportCard = ({ report }) => {
                         </span>
                     )}
                 </div>
+
+                {/* Expandable Details Section */}
+                {expandable && (
+                    <Collapse in={expanded}>
+                        <div className="mt-3">
+                            <hr />
+                            <h6 className="mb-3"><strong>Full Details:</strong></h6>
+                            
+                            <div className="mb-3">
+                                <strong>Full Description:</strong>
+                                <p className="mb-2">{report.Description}</p>
+                            </div>
+
+                            {report.Location && (
+                                <div className="mb-2">
+                                    <strong>Location:</strong> {report.Location}
+                                </div>
+                            )}
+
+                            {report.Priority && (
+                                <div className="mb-2">
+                                    <strong>Priority:</strong> <Badge bg={
+                                        report.Priority === 'Critical' ? 'danger' :
+                                        report.Priority === 'High' ? 'warning' :
+                                        report.Priority === 'Medium' ? 'info' : 'secondary'
+                                    }>{report.Priority}</Badge>
+                                </div>
+                            )}
+
+                            <div className="mb-2">
+                                <strong>Category:</strong> {report.CategoryName} ({report.CategoryRole})
+                            </div>
+
+                            <div className="mb-2">
+                                <strong>Submitted:</strong> {formatDate(report.Timestamp)}
+                            </div>
+
+                            {report.AssignedResponder && (
+                                <div className="mb-2">
+                                    <strong>Assigned To:</strong> {report.AssignedResponder}
+                                </div>
+                            )}
+
+                            {report.actions && report.actions.length > 0 && (
+                                <div className="mt-3">
+                                    <strong>Actions Taken ({report.actions.length}):</strong>
+                                    <ListGroup className="mt-2">
+                                        {report.actions.map((action, index) => (
+                                            <ListGroup.Item key={index}>
+                                                <div>
+                                                    <Badge bg="secondary">#{index + 1}</Badge>{' '}
+                                                    <strong>{action.ResponderName}</strong> - {action.ResponderRole}
+                                                </div>
+                                                <p className="mb-1 mt-2">{action.ActionDescription || action.actiondescription || 'N/A'}</p>
+                                                <small className="text-muted">
+                                                    {formatDate(action.Timestamp || action.timestamp)}
+                                                </small>
+                                            </ListGroup.Item>
+                                        ))}
+                                    </ListGroup>
+                                </div>
+                            )}
+
+                            <div className="mt-3">
+                                <Button
+                                    as={Link}
+                                    to={`/reports/${report.ReportID}`}
+                                    variant="primary"
+                                    size="sm"
+                                >
+                                    View Full Report
+                                </Button>
+                            </div>
+                        </div>
+                    </Collapse>
+                )}
             </Card.Body>
         </Card>
     );
