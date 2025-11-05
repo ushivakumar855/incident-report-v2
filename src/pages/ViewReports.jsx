@@ -5,14 +5,19 @@
 // =============================================
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { reportAPI, categoryAPI } from '../services/api';
 import { handleAPIError } from '../utils/helpers';
 import ReportCard from '../components/ReportCard';
 import FilterBar from '../components/FilterBar';
 import LoadingSpinner from '../components/LoadingSpinner';
+import DashboardHeader from '../components/DashboardHeader';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const ViewReports = () => {
+    const navigate = useNavigate();
+    const userRole = localStorage.getItem('userRole');
     const [reports, setReports] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -97,7 +102,8 @@ const ViewReports = () => {
                     </Row>
                 </div>
             )}
-        </Container>
+            </Container>
+        </>
     );
 };
 

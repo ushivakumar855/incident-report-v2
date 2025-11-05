@@ -11,11 +11,13 @@ import { reportAPI, actionAPI, responderAPI } from '../services/api';
 import { formatDate, handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
+import DashboardHeader from '../components/DashboardHeader';
 import { FaUser, FaCalendar, FaFolder, FaArrowLeft, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 
 const ReportDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const userRole = localStorage.getItem('userRole');
     const [report, setReport] = useState(null);
     const [responders, setResponders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,6 +60,17 @@ const ReportDetails = () => {
     };
 
     const handleDeleteReport = async () => {
+        // Only allow responders to delete resolved reports
+        if (userRole !== 'responder') {
+            showErrorToast('Only responders can delete reports');
+            return;
+        }
+        
+        if (report.Status !== 'Resolved') {
+            showErrorToast('Only resolved reports can be deleted');
+            return;
+        }
+        
         if (window.confirm('Are you sure you want to delete this report?')) {
             try {
                 await reportAPI.delete(id);
@@ -94,27 +107,40 @@ const ReportDetails = () => {
     };
 
     if (loading) {
-        return <LoadingSpinner message="Loading report details..." />;
+        return (
+            <>
+                <DashboardHeader />
+                <LoadingSpinner message="Loading report details..." />
+            </>
+        );
     }
 
     if (!report) {
         return (
-            <Container className="my-5">
-                <Alert variant="danger">Report not found</Alert>
-            </Container>
+            <>
+                <DashboardHeader />
+                <Container className="my-5">
+                    <Alert variant="danger">Report not found</Alert>
+                </Container>
+            </>
         );
     }
 
+    // Check if delete button should be enabled
+    const canDelete = userRole === 'responder' && report.Status === 'Resolved';
+
     return (
-        <Container className="my-5">
-            {/* Back Button */}
-            <Button 
-                variant="outline-secondary" 
-                className="mb-3"
-                onClick={() => navigate('/reports')}
-            >
-                <FaArrowLeft /> Back to Reports
-            </Button>
+        <>
+            <DashboardHeader />
+            <Container className="my-5">
+                {/* Back Button */}
+                <Button 
+                    variant="outline-secondary" 
+                    className="mb-3"
+                    onClick={() => navigate('/reports')}
+                >
+                    <FaArrowLeft /> Back to Reports
+                </Button>
 
             {/* Report Header */}
             <Card className="mb-4 shadow">
@@ -175,6 +201,8 @@ const ReportDetails = () => {
                             variant="danger" 
                             size="sm"
                             onClick={handleDeleteReport}
+                            disabled={!canDelete}
+                            title={!canDelete ? 'Only responders can delete resolved reports' : ''}
                         >
                             <FaTrash /> Delete Report
                         </Button>
@@ -280,6 +308,7 @@ const ReportDetails = () => {
                 </Card.Body>
             </Card>
         </Container>
+        </>
     );
 };
 

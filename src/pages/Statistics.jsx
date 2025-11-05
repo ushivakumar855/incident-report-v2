@@ -9,6 +9,7 @@ import { Container, Row, Col, Card, Table, ProgressBar } from 'react-bootstrap';
 import { reportAPI } from '../services/api';
 import { handleAPIError, getStatusColor } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
+import DashboardHeader from '../components/DashboardHeader';
 import { FaChartPie, FaChartBar, FaList } from 'react-icons/fa';
 
 const Statistics = () => {
@@ -31,13 +32,23 @@ const Statistics = () => {
     };
 
     if (loading) {
-        return <LoadingSpinner message="Loading statistics..." />;
+        return (
+            <>
+                <DashboardHeader />
+                <LoadingSpinner message="Loading statistics..." />
+            </>
+        );
     }
 
     if (!stats) {
-        return <Container className="my-5">
-            <p>No statistics available.</p>
-        </Container>;
+        return (
+            <>
+                <DashboardHeader />
+                <Container className="my-5">
+                    <p>No statistics available.</p>
+                </Container>
+            </>
+        );
     }
 
     const calculatePercentage = (count, total) => {
@@ -45,6 +56,8 @@ const Statistics = () => {
     };
 
     return (
+        <>
+            <DashboardHeader />
         <Container className="my-5">
             <h2 className="mb-4">��� System Statistics</h2>
 
@@ -161,68 +174,8 @@ const Statistics = () => {
                     </Table>
                 </Card.Body>
             </Card>
-
-            {/* Key Metrics */}
-            <Row className="mt-4">
-                <Col md={6}>
-                    <Card className="shadow">
-                        <Card.Header className="bg-info text-white">
-                            <h5 className="mb-0">��� Key Metrics</h5>
-                        </Card.Header>
-                        <Card.Body>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Resolution Rate:</span>
-                                <strong>
-                                    {calculatePercentage(
-                                        stats.byStatus.find(s => s.Status === 'Resolved')?.count || 0,
-                                        stats.totals.totalReports
-                                    )}%
-                                </strong>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Pending Reports:</span>
-                                <strong>
-                                    {stats.byStatus.find(s => s.Status === 'Pending')?.count || 0}
-                                </strong>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Average Actions per Report:</span>
-                                <strong>
-                                    {(stats.totals.totalActions / stats.totals.totalReports || 0).toFixed(2)}
-                                </strong>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={6}>
-                    <Card className="shadow">
-                        <Card.Header className="bg-warning text-dark">
-                            <h5 className="mb-0">⚡ Quick Stats</h5>
-                        </Card.Header>
-                        <Card.Body>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Most Common Category:</span>
-                                <strong>
-                                    {stats.byCategory.reduce((prev, current) => 
-                                        (prev.count > current.count) ? prev : current
-                                    ).Name}
-                                </strong>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Anonymous Reports:</span>
-                                <strong>
-                                    {stats.totals.totalReports - stats.totals.totalUsers}
-                                </strong>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                                <span>Active Categories:</span>
-                                <strong>{stats.byCategory.length}</strong>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
+            </Container>
+        </>
     );
 };
 
