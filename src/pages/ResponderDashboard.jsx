@@ -9,6 +9,7 @@ import { Container, Row, Col, Card, Table, Badge, Button, Form } from 'react-boo
 import { Link } from 'react-router-dom';
 import { reportAPI, responderAPI } from '../services/api';
 import { formatDate, handleAPIError } from '../utils/helpers';
+import { RESPONDER_STATUS_OPTIONS } from '../utils/constants';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import DashboardHeader from '../components/DashboardHeader';
@@ -148,10 +149,11 @@ const ResponderDashboard = () => {
                                                 value={selectedStatus}
                                                 onChange={(e) => setSelectedStatus(e.target.value)}
                                             >
-                                                <option value="Pending">Pending</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="Resolved">Resolved</option>
-                                                <option value="Closed">Closed</option>
+                                                {RESPONDER_STATUS_OPTIONS.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
                                             </Form.Select>
                                         </Form.Group>
                                     </Col>

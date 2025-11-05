@@ -9,6 +9,7 @@ import { Container, Row, Col, Card, Button, Table, Form, Badge } from 'react-boo
 import { Link } from 'react-router-dom';
 import { reportAPI } from '../services/api';
 import { formatDate, handleAPIError } from '../utils/helpers';
+import { REPORT_STATUS_OPTIONS } from '../utils/constants';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ReportCard from '../components/ReportCard';
 import StatusBadge from '../components/StatusBadge';
@@ -152,11 +153,11 @@ const UserDashboard = () => {
                                                 value={filterStatus}
                                                 onChange={(e) => setFilterStatus(e.target.value)}
                                             >
-                                                <option value="All">All Status</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="Resolved">Resolved</option>
-                                                <option value="Closed">Closed</option>
+                                                {REPORT_STATUS_OPTIONS.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
                                             </Form.Select>
                                         </Form.Group>
                                     </Col>

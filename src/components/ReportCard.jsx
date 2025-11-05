@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Card, Badge, Button, Collapse, ListGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { formatRelativeTime, formatDate, getStatusColor, truncateText } from '../utils/helpers';
+import { getPriorityColor } from '../utils/constants';
 import { FaUser, FaCalendar, FaFolder, FaComments, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
 
 const ReportCard = ({ report, expandable = false }) => {
@@ -99,11 +100,9 @@ const ReportCard = ({ report, expandable = false }) => {
 
                             {report.Priority && (
                                 <div className="mb-2">
-                                    <strong>Priority:</strong> <Badge bg={
-                                        report.Priority === 'Critical' ? 'danger' :
-                                        report.Priority === 'High' ? 'warning' :
-                                        report.Priority === 'Medium' ? 'info' : 'secondary'
-                                    }>{report.Priority}</Badge>
+                                    <strong>Priority:</strong> <Badge bg={getPriorityColor(report.Priority)}>
+                                        {report.Priority}
+                                    </Badge>
                                 </div>
                             )}
 
@@ -131,7 +130,7 @@ const ReportCard = ({ report, expandable = false }) => {
                                                     <Badge bg="secondary">#{index + 1}</Badge>{' '}
                                                     <strong>{action.ResponderName}</strong> - {action.ResponderRole}
                                                 </div>
-                                                <p className="mb-1 mt-2">{action.ActionDescription || action.actiondescription || 'N/A'}</p>
+                                                <p className="mb-1 mt-2">{action.ActionDescription || action.actiondescription || 'No description provided'}</p>
                                                 <small className="text-muted">
                                                     {formatDate(action.Timestamp || action.timestamp)}
                                                 </small>

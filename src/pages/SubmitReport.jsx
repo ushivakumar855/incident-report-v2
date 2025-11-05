@@ -10,6 +10,7 @@ import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { reportAPI, categoryAPI, userAPI } from '../services/api';
 import { handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
+import { PRIORITY_OPTIONS, DEFAULT_PRIORITY } from '../utils/constants';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
@@ -22,7 +23,7 @@ const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
         categoryId: '',
         description: '',
         location: '',
-        priority: 'Medium',
+        priority: DEFAULT_PRIORITY,
         isAnonymous: false,
         pseudonym: '',
         campusDept: '',
@@ -83,7 +84,7 @@ const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
                 categoryId: formData.categoryId,
                 userId: userId,
                 description: formData.description,
-                location: formData.location || null,
+                location: formData.location ? formData.location.trim() : null,
                 priority: formData.priority,
                 isAnonymous: formData.isAnonymous
             };
@@ -100,7 +101,7 @@ const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
                     categoryId: '',
                     description: '',
                     location: '',
-                    priority: 'Medium',
+                    priority: DEFAULT_PRIORITY,
                     isAnonymous: false,
                     pseudonym: '',
                     campusDept: '',
@@ -196,10 +197,11 @@ const SubmitReport = ({ inline = false, onSubmitSuccess, onCancel }) => {
                     onChange={handleChange}
                     required
                 >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
+                    {PRIORITY_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
                 </Form.Select>
                 <Form.Text className="text-muted">
                     Select the priority level based on the severity of the incident
