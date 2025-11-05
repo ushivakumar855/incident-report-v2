@@ -2,7 +2,7 @@
 
 ## Database Setup
 
-The database schema is already included in `database/incident1.sql`. This file contains:
+The database schema is already included in `database/incident_db1.sql`. This file contains:
 - Complete database schema for `incident_db1`
 - All stored procedures, functions, and triggers
 - Sample data for testing
@@ -11,7 +11,7 @@ The database schema is already included in `database/incident1.sql`. This file c
 
 1. **Import the database:**
    ```bash
-   mysql -u root -p < database/incident1.sql
+   mysql -u root -p < database/incident_db1.sql
    ```
    Enter your MySQL password when prompted.
 
@@ -172,7 +172,7 @@ lsof -ti:3000 | xargs kill -9
 ### Tables Not Found
 ```bash
 # Re-import the database
-mysql -u root -p < database/incident1.sql
+mysql -u root -p < database/incident_db1.sql
 ```
 
 ## API Testing with curl
