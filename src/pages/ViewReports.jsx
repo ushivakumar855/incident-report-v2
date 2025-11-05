@@ -24,6 +24,7 @@ const ViewReports = () => {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.status, filters.categoryId]);
 
     const fetchData = async () => {
@@ -70,7 +71,7 @@ const ViewReports = () => {
 
     return (
         <Container className="my-5">
-            <h2 className="mb-4">í³‹ All Reports</h2>
+            <h2 className="mb-4">ï¿½ï¿½ï¿½ All Reports</h2>
 
             <FilterBar 
                 filters={filters}

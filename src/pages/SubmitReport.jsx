@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { reportAPI, categoryAPI, userAPI } from '../services/api';
-import { handleAPIError, showSuccessToast, showErrorToast, generateAnonymousId } from '../utils/helpers';
+import { handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const SubmitReport = () => {
@@ -107,7 +107,7 @@ const SubmitReport = () => {
         <Container className="my-5">
             <Card className="shadow">
                 <Card.Header className="bg-primary text-white">
-                    <h3 className="mb-0">Ì≥ù Submit New Report</h3>
+                    <h3 className="mb-0">ÔøΩÔøΩÔøΩ Submit New Report</h3>
                 </Card.Header>
                 <Card.Body>
                     <Alert variant="info">
@@ -169,7 +169,7 @@ const SubmitReport = () => {
                         {!formData.isAnonymous && (
                             <Card className="mb-3 bg-light">
                                 <Card.Body>
-                                    <h5 className="mb-3">Ì±§ Your Information (Optional)</h5>
+                                    <h5 className="mb-3">ÔøΩÔøΩÔøΩ Your Information (Optional)</h5>
                                     
                                     <Form.Group className="mb-3">
                                         <Form.Label>Name/Pseudonym</Form.Label>

@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Row, Col, Badge, Button, Alert, ListGroup, Form } from 'react-bootstrap';
 import { reportAPI, actionAPI, responderAPI } from '../services/api';
-import { formatDate, getStatusColor, handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
+import { formatDate, handleAPIError, showSuccessToast, showErrorToast } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import { FaUser, FaCalendar, FaFolder, FaArrowLeft, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
@@ -27,6 +27,7 @@ const ReportDetails = () => {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const fetchData = async () => {
@@ -118,7 +119,7 @@ const ReportDetails = () => {
             {/* Report Header */}
             <Card className="mb-4 shadow">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 className="mb-0">Ì≥ã Report #{report.ReportID}</h3>
+                    <h3 className="mb-0">ÔøΩÔøΩÔøΩ Report #{report.ReportID}</h3>
                     <StatusBadge status={report.Status} />
                 </Card.Header>
                 <Card.Body>
@@ -184,7 +185,7 @@ const ReportDetails = () => {
             {/* Actions Section */}
             <Card className="mb-4 shadow">
                 <Card.Header className="bg-info text-white d-flex justify-content-between align-items-center">
-                    <h4 className="mb-0">Ì≥ù Actions Taken ({report.actions?.length || 0})</h4>
+                    <h4 className="mb-0">ÔøΩÔøΩÔøΩ Actions Taken ({report.actions?.length || 0})</h4>
                     <Button 
                         variant="light" 
                         size="sm"
