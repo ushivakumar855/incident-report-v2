@@ -142,16 +142,25 @@ exports.createAction = async (req, res, next) => {
         console.log('✅ [STORED PROCEDURE] sp_AddAction executed successfully');
         console.log('✅ [TRIGGER] trg_AfterInsertAction fired - Action logged in audit_log');
         
-        // Update report status to 'In Progress' if it's 'Pending'
+        // Update report status to 'In Progress' if it's 'Pending' and assign responder
         if (reports[0].Status === 'Pending') {
-            console.log('🔄 [UPDATE] Updating report status to "In Progress"...');
+            console.log('🔄 [UPDATE] Updating report status to "In Progress" and assigning responder...');
             await db.query(`
                 UPDATE reports 
-                SET Status = 'In Progress'
+                SET Status = 'In Progress', ResponderID = ?
                 WHERE ReportID = ?
-            `, [reportId]);
-            console.log('✅ [UPDATE] Report status updated to "In Progress"');
+            `, [responderId, reportId]);
+            console.log('✅ [UPDATE] Report status updated to "In Progress" and responder assigned');
             console.log('✅ [TRIGGER] trg_AfterUpdateReport fired - Status change logged');
+        } else if (reports[0].ResponderID === null || reports[0].ResponderID === undefined) {
+            // If report doesn't have a responder yet, assign the current one
+            console.log('🔄 [UPDATE] Assigning responder to report...');
+            await db.query(`
+                UPDATE reports 
+                SET ResponderID = ?
+                WHERE ReportID = ?
+            `, [responderId, reportId]);
+            console.log('✅ [UPDATE] Responder assigned to report');
         }
         
         // Get the created action
