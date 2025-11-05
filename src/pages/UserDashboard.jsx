@@ -1,23 +1,23 @@
 // =============================================
-// Responder Dashboard Page - With Auto-Refresh Stats
+// User Dashboard Page - With Auto-Refresh Stats
 // Author: ushivakumar855
 // Date: 2025-11-03
 // =============================================
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Badge, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Table, Form, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { reportAPI, responderAPI } from '../services/api';
+import { reportAPI } from '../services/api';
 import { formatDate, getStatusColor, handleAPIError } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ReportCard from '../components/ReportCard';
 import StatusBadge from '../components/StatusBadge';
 import DashboardHeader from '../components/DashboardHeader';
-import { FaList, FaChartBar, FaFilter, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaList, FaChartBar, FaFilter } from 'react-icons/fa';
 
-const ResponderDashboard = () => {
-    const [reports, setReports] = useState([]);
+const UserDashboard = () => {
+    const [recentReports, setRecentReports] = useState([]);
     const [allReports, setAllReports] = useState([]);
-    const [responders, setResponders] = useState([]);
     const [stats, setStats] = useState({
         total: 0,
         pending: 0,
@@ -25,30 +25,24 @@ const ResponderDashboard = () => {
         resolved: 0,
         closed: 0
     });
-    const [selectedStatus, setSelectedStatus] = useState('Pending');
     const [loading, setLoading] = useState(true);
     const [showAllReports, setShowAllReports] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
-    const [showResponders, setShowResponders] = useState(false);
+    const [filterStatus, setFilterStatus] = useState('All');
 
     useEffect(() => {
-        fetchData();
-    }, [selectedStatus]);
+        fetchUserData();
+    }, []);
 
     // ✅ FIXED: Proper calculation of statistics from actual report data
-    const fetchData = async () => {
+    const fetchUserData = async () => {
         setLoading(true);
         try {
-            const [reportsRes, respondersRes, allReportsRes] = await Promise.all([
-                reportAPI.getByStatus(selectedStatus),
-                responderAPI.getAll(),
-                reportAPI.getAll()
-            ]);
-
-            const allReportsData = allReportsRes.data.data;
-            setReports(reportsRes.data.data);
+            const reportsRes = await reportAPI.getAll();
+            const allReportsData = reportsRes.data.data;
+            
             setAllReports(allReportsData);
-            setResponders(respondersRes.data.data);
+            setRecentReports(allReportsData.slice(0, 5));
             
             // ✅ Calculate statistics from actual report data
             const calculatedStats = {
@@ -70,13 +64,12 @@ const ResponderDashboard = () => {
 
     // ✅ Add refresh function to manually update data
     const refreshData = () => {
-        fetchData();
+        fetchUserData();
     };
 
     const handleViewAllReports = () => {
         setShowAllReports(!showAllReports);
         setShowStatistics(false);
-        setShowResponders(false);
         // Refresh data when viewing all reports
         if (!showAllReports) {
             refreshData();
@@ -86,20 +79,17 @@ const ResponderDashboard = () => {
     const handleViewStatistics = () => {
         setShowStatistics(!showStatistics);
         setShowAllReports(false);
-        setShowResponders(false);
     };
 
-    const handleViewResponders = () => {
-        setShowResponders(!showResponders);
-        setShowAllReports(false);
-        setShowStatistics(false);
-    };
+    const filteredReports = filterStatus === 'All' 
+        ? allReports 
+        : allReports.filter(report => report.Status === filterStatus);
 
     if (loading) {
         return (
             <>
                 <DashboardHeader />
-                <LoadingSpinner message="Loading dashboard..." />
+                <LoadingSpinner message="Loading your dashboard..." />
             </>
         );
     }
@@ -112,9 +102,9 @@ const ResponderDashboard = () => {
                     <Col>
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
-                                <h2>🛡️ Responder Dashboard</h2>
+                                <h2>👤 User Dashboard</h2>
                                 <p className="text-muted">
-                                    Manage and respond to incident reports
+                                    Welcome! Manage your incident reports and track their status.
                                 </p>
                             </div>
                             {/* ✅ Add Refresh Button */}
@@ -137,6 +127,14 @@ const ResponderDashboard = () => {
                                 <h5 className="mb-3">Quick Actions</h5>
                                 <div className="d-flex gap-3 flex-wrap">
                                     <Button 
+                                        as={Link} 
+                                        to="/submit" 
+                                        variant="primary"
+                                        className="d-flex align-items-center gap-2"
+                                    >
+                                        <FaPlus /> Submit New Report
+                                    </Button>
+                                    <Button 
                                         onClick={handleViewAllReports}
                                         variant={showAllReports ? "primary" : "outline-primary"}
                                         className="d-flex align-items-center gap-2"
@@ -150,26 +148,31 @@ const ResponderDashboard = () => {
                                     >
                                         <FaChartBar /> {showStatistics ? 'Hide' : 'View'} Statistics
                                     </Button>
-                                    <Button 
-                                        onClick={handleViewResponders}
-                                        variant={showResponders ? "success" : "outline-success"}
-                                        className="d-flex align-items-center gap-2"
-                                    >
-                                        <FaUsers /> {showResponders ? 'Hide' : 'View'} Responders
-                                    </Button>
                                 </div>
                             </Card.Body>
                         </Card>
                     </Col>
                 </Row>
 
-                {/* Summary Cards - ✅ Now showing correct real-time data */}
+                {/* Statistics Cards - ✅ Now showing correct real-time data */}
                 <Row className="mb-4">
+                    <Col md={3} sm={6} className="mb-3">
+                        <Card className="text-center bg-primary text-white shadow h-100">
+                            <Card.Body>
+                                <h3>{stats.total}</h3>
+                                <p className="mb-0">Total Reports</p>
+                            </Card.Body>
+                        </Card>
+                    </Col>
                     <Col md={3} sm={6} className="mb-3">
                         <Card 
                             className="text-center bg-warning text-white shadow h-100"
                             style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('Pending')}
+                            onClick={() => {
+                                setFilterStatus('Pending');
+                                setShowAllReports(true);
+                                setShowStatistics(false);
+                            }}
                         >
                             <Card.Body>
                                 <h3>{stats.pending}</h3>
@@ -181,7 +184,11 @@ const ResponderDashboard = () => {
                         <Card 
                             className="text-center bg-info text-white shadow h-100"
                             style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('In Progress')}
+                            onClick={() => {
+                                setFilterStatus('In Progress');
+                                setShowAllReports(true);
+                                setShowStatistics(false);
+                            }}
                         >
                             <Card.Body>
                                 <h3>{stats.inProgress}</h3>
@@ -193,19 +200,15 @@ const ResponderDashboard = () => {
                         <Card 
                             className="text-center bg-success text-white shadow h-100"
                             style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('Resolved')}
+                            onClick={() => {
+                                setFilterStatus('Resolved');
+                                setShowAllReports(true);
+                                setShowStatistics(false);
+                            }}
                         >
                             <Card.Body>
                                 <h3>{stats.resolved}</h3>
                                 <p className="mb-0">Resolved</p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3} sm={6} className="mb-3">
-                        <Card className="text-center bg-secondary text-white shadow h-100">
-                            <Card.Body>
-                                <h3>{responders.length}</h3>
-                                <p className="mb-0">Responders</p>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -217,7 +220,7 @@ const ResponderDashboard = () => {
                         <Col>
                             <Card className="shadow">
                                 <Card.Header className="d-flex justify-content-between align-items-center bg-primary text-white">
-                                    <h5 className="mb-0">📋 All Reports ({allReports.length})</h5>
+                                    <h5 className="mb-0">📋 All Reports ({filteredReports.length})</h5>
                                     <Button 
                                         variant="light" 
                                         size="sm"
@@ -227,45 +230,62 @@ const ResponderDashboard = () => {
                                     </Button>
                                 </Card.Header>
                                 <Card.Body>
-                                    {allReports.length === 0 ? (
-                                        <p className="text-center text-muted my-4">
-                                            No reports found.
-                                        </p>
+                                    {/* Filter Section */}
+                                    <Row className="mb-3">
+                                        <Col md={4}>
+                                            <Form.Group>
+                                                <Form.Label>
+                                                    <FaFilter className="me-2" />
+                                                    Filter by Status
+                                                </Form.Label>
+                                                <Form.Select
+                                                    value={filterStatus}
+                                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                                >
+                                                    <option value="All">All Status</option>
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="In Progress">In Progress</option>
+                                                    <option value="Resolved">Resolved</option>
+                                                    <option value="Closed">Closed</option>
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+
+                                    {filteredReports.length === 0 ? (
+                                        <div className="text-center py-5">
+                                            <p className="text-muted mb-3">No reports found.</p>
+                                            <Button as={Link} to="/submit" variant="primary">
+                                                Submit Your First Report
+                                            </Button>
+                                        </div>
                                     ) : (
                                         <Table responsive hover>
                                             <thead className="table-light">
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Category</th>
+                                                    <th>Report ID</th>
                                                     <th>Description</th>
-                                                    <th>Reporter</th>
+                                                    <th>Category</th>
                                                     <th>Status</th>
-                                                    <th>Actions</th>
+                                                    <th>Reporter</th>
                                                     <th>Date</th>
-                                                    <th>Action</th>
+                                                    <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {allReports.map(report => (
+                                                {filteredReports.map(report => (
                                                     <tr key={report.ReportID}>
                                                         <td><strong>#{report.ReportID}</strong></td>
+                                                        <td>{report.Description.substring(0, 60)}...</td>
                                                         <td>
                                                             <Badge bg="secondary">
                                                                 {report.CategoryName}
                                                             </Badge>
                                                         </td>
                                                         <td>
-                                                            {report.Description.substring(0, 50)}...
-                                                        </td>
-                                                        <td>{report.ReporterName || 'Anonymous'}</td>
-                                                        <td>
                                                             <StatusBadge status={report.Status} />
                                                         </td>
-                                                        <td>
-                                                            <Badge bg="info">
-                                                                {report.ActionCount || 0} actions
-                                                            </Badge>
-                                                        </td>
+                                                        <td>{report.ReporterName || 'Anonymous'}</td>
                                                         <td>
                                                             <small>{formatDate(report.Timestamp)}</small>
                                                         </td>
@@ -276,7 +296,7 @@ const ResponderDashboard = () => {
                                                                 variant="primary"
                                                                 size="sm"
                                                             >
-                                                                View
+                                                                View Details
                                                             </Button>
                                                         </td>
                                                     </tr>
@@ -310,7 +330,7 @@ const ResponderDashboard = () => {
                                         <Col md={6} className="mb-4">
                                             <Card className="border-primary">
                                                 <Card.Header className="bg-primary text-white">
-                                                    <h6 className="mb-0">Report Status Overview</h6>
+                                                    <h6 className="mb-0">Report Status Breakdown</h6>
                                                 </Card.Header>
                                                 <Card.Body>
                                                     <Table borderless>
@@ -343,20 +363,22 @@ const ResponderDashboard = () => {
                                         <Col md={6} className="mb-4">
                                             <Card className="border-success">
                                                 <Card.Header className="bg-success text-white">
-                                                    <h6 className="mb-0">Response Metrics</h6>
+                                                    <h6 className="mb-0">Resolution Rate</h6>
                                                 </Card.Header>
                                                 <Card.Body>
-                                                    <div className="text-center mb-4">
+                                                    <div className="text-center">
                                                         <h1 className="display-3 text-success">
                                                             {stats.total > 0 
                                                                 ? Math.round((stats.resolved / stats.total) * 100)
                                                                 : 0}%
                                                         </h1>
-                                                        <p className="text-muted">Resolution Rate</p>
+                                                        <p className="text-muted">
+                                                            {stats.resolved} out of {stats.total} reports resolved
+                                                        </p>
                                                     </div>
                                                     <hr />
                                                     <div className="text-center">
-                                                        <p className="mb-1"><strong>Active Cases:</strong></p>
+                                                        <p className="mb-1"><strong>Active Reports:</strong></p>
                                                         <h4>
                                                             <Badge bg="info">
                                                                 {stats.pending + stats.inProgress}
@@ -373,144 +395,64 @@ const ResponderDashboard = () => {
                     </Row>
                 )}
 
-                {/* Responders List - Shown when button clicked */}
-                {showResponders && (
-                    <Row className="mb-4">
+                {/* Recent Reports - Always Visible */}
+                {!showAllReports && (
+                    <Row>
                         <Col>
                             <Card className="shadow">
-                                <Card.Header className="d-flex justify-content-between align-items-center bg-success text-white">
-                                    <h5 className="mb-0">👥 Active Responders ({responders.length})</h5>
+                                <Card.Header className="d-flex justify-content-between align-items-center">
+                                    <h5 className="mb-0">📋 Recent Reports</h5>
                                     <Button 
-                                        variant="light" 
+                                        onClick={handleViewAllReports}
+                                        variant="outline-primary" 
                                         size="sm"
-                                        onClick={() => setShowResponders(false)}
                                     >
-                                        Close
+                                        View All
                                     </Button>
                                 </Card.Header>
                                 <Card.Body>
-                                    <Table responsive striped hover>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Role</th>
-                                                <th>Contact</th>
-                                                <th>Actions Taken</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {responders.map(responder => (
-                                                <tr key={responder.ResponderID}>
-                                                    <td><strong>{responder.Name}</strong></td>
-                                                    <td>{responder.Role}</td>
-                                                    <td>{responder.ContactInfo}</td>
-                                                    <td>
-                                                        <Badge bg="info">
-                                                            {responder.ActionCount || 0} actions
-                                                        </Badge>
-                                                    </td>
-                                                </tr>
+                                    {recentReports.length === 0 ? (
+                                        <div className="text-center py-5">
+                                            <p className="text-muted mb-3">No reports found.</p>
+                                            <Button as={Link} to="/submit" variant="primary">
+                                                Submit Your First Report
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            {recentReports.map(report => (
+                                                <ReportCard key={report.ReportID} report={report} />
                                             ))}
-                                        </tbody>
-                                    </Table>
+                                        </div>
+                                    )}
                                 </Card.Body>
                             </Card>
                         </Col>
                     </Row>
                 )}
 
-                {/* Filter and Current Status Reports - Always Visible */}
-                {!showAllReports && !showStatistics && !showResponders && (
-                    <>
-                        <Row className="mb-3">
-                            <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>
-                                        <FaFilter className="me-2" />
-                                        Filter by Status
-                                    </Form.Label>
-                                    <Form.Select
-                                        value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
-                                    >
-                                        <option value="Pending">Pending</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Resolved">Resolved</option>
-                                        <option value="Closed">Closed</option>
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        <Card className="shadow">
-                            <Card.Header>
-                                <h5 className="mb-0">📋 Reports - {selectedStatus} ({reports.length})</h5>
-                            </Card.Header>
+                {/* Help Section */}
+                <Row className="mt-4">
+                    <Col>
+                        <Card className="shadow-sm bg-light">
                             <Card.Body>
-                                {reports.length === 0 ? (
-                                    <p className="text-center text-muted my-4">
-                                        No {selectedStatus.toLowerCase()} reports found.
-                                    </p>
-                                ) : (
-                                    <Table responsive hover>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Category</th>
-                                                <th>Description</th>
-                                                <th>Reporter</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                                <th>Date</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {reports.map(report => (
-                                                <tr key={report.ReportID}>
-                                                    <td><strong>#{report.ReportID}</strong></td>
-                                                    <td>
-                                                        <Badge bg="secondary">
-                                                            {report.CategoryName}
-                                                        </Badge>
-                                                    </td>
-                                                    <td>
-                                                        {report.Description.substring(0, 50)}...
-                                                    </td>
-                                                    <td>{report.ReporterName || 'Anonymous'}</td>
-                                                    <td>
-                                                        <StatusBadge status={report.Status} />
-                                                    </td>
-                                                    <td>
-                                                        <Badge bg="info">
-                                                            {report.ActionCount || 0} actions
-                                                        </Badge>
-                                                    </td>
-                                                    <td>
-                                                        <small>{formatDate(report.Timestamp)}</small>
-                                                    </td>
-                                                    <td>
-                                                        <Button
-                                                            as={Link}
-                                                            to={`/reports/${report.ReportID}`}
-                                                            variant="primary"
-                                                            size="sm"
-                                                        >
-                                                            View
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
-                                )}
+                                <h5>ℹ️ Need Help?</h5>
+                                <p className="mb-2">
+                                    <strong>How to report an incident:</strong>
+                                </p>
+                                <ol className="mb-0">
+                                    <li>Click "Submit New Report" to create an incident report</li>
+                                    <li>Fill in the incident details and select appropriate category</li>
+                                    <li>Track your report status in "View All Reports"</li>
+                                    <li>View detailed progress in each report's detail page</li>
+                                </ol>
                             </Card.Body>
                         </Card>
-                    </>
-                )}
+                    </Col>
+                </Row>
             </Container>
         </>
     );
 };
 
-export default ResponderDashboard;
+export default UserDashboard;

@@ -1,7 +1,13 @@
+-- Create Database
+DROP DATABASE IF EXISTS incident_db1;
+CREATE DATABASE incident_db1;
+USE incident_db1;
 
-CREATE DATABASE myapp;
-USE myapp;
+-- ============================================
+-- TABLE CREATION (DDL Commands)
+-- ============================================
 
+-- 1. USERS TABLE (Entity 1)
 CREATE TABLE users (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
     Pseudonym VARCHAR(50) DEFAULT 'Anonymous',
@@ -44,8 +50,6 @@ CREATE TABLE reports (
     CategoryID INT NOT NULL,
     UserID INT NULL,  -- NULL for anonymous reports
     Description TEXT NOT NULL,
-    Location VARCHAR(200),
-    Priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
     Status ENUM('Pending', 'In Progress', 'Under Review', 'Resolved', 'Closed') DEFAULT 'Pending',
     Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     ResolvedAt DATETIME NULL,
@@ -54,7 +58,6 @@ CREATE TABLE reports (
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE SET NULL,
     FOREIGN KEY (ResponderID) REFERENCES responders(ResponderID) ON DELETE SET NULL,
     INDEX idx_status (Status),
-    INDEX idx_priority (Priority),
     INDEX idx_timestamp (Timestamp),
     INDEX idx_category (CategoryID)
 ) ENGINE=InnoDB;
@@ -85,10 +88,33 @@ CREATE TABLE audit_log (
     INDEX idx_table_operation (TableName, Operation)
 ) ENGINE=InnoDB;
 
+-- ============================================
+-- CREATE USERS WITH DIFFERENT PRIVILEGES
+-- ============================================
 
+-- Admin User (Full Privileges)
+DROP USER IF EXISTS 'admin_user'@'localhost';
+CREATE USER 'admin_user'@'localhost' IDENTIFIED BY 'Admin@123';
+GRANT ALL PRIVILEGES ON incident_db1.* TO 'admin_user'@'localhost';
 
+-- Responder User (Limited Privileges)
+DROP USER IF EXISTS 'responder_user'@'localhost';
+CREATE USER 'responder_user'@'localhost' IDENTIFIED BY 'Responder@123';
+GRANT SELECT, INSERT, UPDATE ON incident_db1.reports TO 'responder_user'@'localhost';
+GRANT SELECT, INSERT ON incident_db1.actionstaken TO 'responder_user'@'localhost';
+GRANT SELECT ON incident_db1.categories TO 'responder_user'@'localhost';
+GRANT SELECT ON incident_db1.users TO 'responder_user'@'localhost';
 
---PROCEDURES:
+-- Read-Only User (View Only)
+DROP USER IF EXISTS 'viewer_user'@'localhost';
+CREATE USER 'viewer_user'@'localhost' IDENTIFIED BY 'Viewer@123';
+GRANT SELECT ON incident_db1.* TO 'viewer_user'@'localhost';
+
+FLUSH PRIVILEGES;
+
+-- ============================================
+-- STORED PROCEDURES
+-- ============================================
 
 -- Procedure 1: Submit New Report
 DELIMITER //
@@ -182,7 +208,9 @@ END //
 
 DELIMITER ;
 
---FUNCTIONS:
+-- ============================================
+-- FUNCTIONS
+-- ============================================
 
 -- Function 1: Calculate Response Time
 DELIMITER //
@@ -243,9 +271,9 @@ END //
 
 DELIMITER ;
 
-
+-- ============================================
 -- TRIGGERS
-
+-- ============================================
 
 -- Trigger 1: Before Insert on Reports (Auto-assign responder for critical reports)
 DELIMITER //
@@ -315,6 +343,11 @@ END //
 
 DELIMITER ;
 
+-- ============================================
+-- DATA INSERTION
+-- ============================================
+
+-- Insert Categories
 INSERT INTO categories (Name, Role, ContactInfo, Description) VALUES
 ('Harassment', 'Dean of Students', 'dean@bmsit.edu', 'Cases of harassment, bullying, or inappropriate behavior'),
 ('Facilities', 'Facilities Manager', 'facilities@bmsit.edu', 'Infrastructure and maintenance issues'),
@@ -340,8 +373,39 @@ INSERT INTO users (Pseudonym, CampusDept, OptionalContact) VALUES
 ('AlexBrown', 'Mechanical', 'alex@student.bmsit.edu'),
 ('SarahWilson', 'Civil Engineering', 'sarah@student.bmsit.edu');
 
--- COMPLEX QUERIES
+-- Insert Reports using Procedure
+CALL sp_SubmitReport(1, 2, 'Student being harassed in library area', 'Library - 2nd Floor', 'High');
+CALL sp_SubmitReport(2, 3, 'Water leakage in restroom causing slippery floor', 'Building A - Floor 3', 'Medium');
+CALL sp_SubmitReport(3, 1, 'Grade dispute for DBMS course', 'CS Department', 'Low');
+CALL sp_SubmitReport(4, 4, 'Fire alarm not working properly', 'Hostel Block B', 'Critical');
+CALL sp_SubmitReport(5, 1, 'Bias in evaluation process', 'ECE Department', 'High');
+CALL sp_SubmitReport(2, 5, 'Broken chairs in classroom', 'Building C - Room 305', 'Low');
+CALL sp_SubmitReport(6, 2, 'WiFi not working in lab', 'Computer Lab 2', 'Medium');
+CALL sp_SubmitReport(1, 1, 'Inappropriate behavior by senior student', 'Canteen Area', 'Critical');
 
+-- Assign Responders
+CALL sp_AssignResponder(1, 2);
+CALL sp_AssignResponder(2, 4);
+CALL sp_AssignResponder(3, 3);
+CALL sp_AssignResponder(4, 5);
+CALL sp_AssignResponder(5, 2);
+CALL sp_AssignResponder(7, 6);
+
+-- Add Actions
+CALL sp_AddAction(1, 2, 'Initial investigation started. Witnesses being interviewed.', 'Investigation');
+CALL sp_AddAction(2, 4, 'Plumber assigned to fix the leakage. Expected completion in 2 hours.', 'Resolution');
+CALL sp_AddAction(3, 3, 'Meeting scheduled with faculty and student to discuss grade concerns.', 'Investigation');
+CALL sp_AddAction(4, 5, 'Fire alarm inspection team dispatched immediately.', 'Investigation');
+CALL sp_AddAction(1, 2, 'Counseling session arranged for affected student.', 'Follow-up');
+CALL sp_AddAction(2, 4, 'Leakage fixed and area cleaned. Issue resolved.', 'Closed');
+
+-- Resolve Some Reports
+CALL sp_ResolveReport(2, 4, 'Water leakage fixed successfully. Area is now safe.');
+CALL sp_ResolveReport(3, 3, 'Grade reviewed and corrected. Student satisfied with outcome.');
+
+-- ============================================
+-- COMPLEX QUERIES
+-- ============================================
 
 -- NESTED QUERY 1: Reports with above-average response time
 SELECT 
@@ -461,6 +525,9 @@ FROM reports
 GROUP BY DATE_FORMAT(Timestamp, '%Y-%m')
 ORDER BY Month DESC;
 
+-- ============================================
+-- VIEWS FOR EASY ACCESS
+-- ============================================
 
 -- View 1: Active Reports Dashboard
 CREATE VIEW vw_ActiveReports AS
@@ -495,3 +562,10 @@ LEFT JOIN reports rep ON r.ResponderID = rep.ResponderID
     AND rep.Status IN ('Pending', 'In Progress', 'Under Review')
 GROUP BY r.ResponderID, r.Name, r.Role, r.TotalResolved;
 
+-- ============================================
+-- INDEXES FOR PERFORMANCE
+-- ============================================
+
+CREATE INDEX idx_report_status_priority ON reports(Status, Priority);
+CREATE INDEX idx_report_timestamp_status ON reports(Timestamp, Status);
+CREATE INDEX idx_action_report_timestamp ON actionstaken(ReportID, Timestamp);
