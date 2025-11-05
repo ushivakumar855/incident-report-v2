@@ -152,7 +152,7 @@ exports.createAction = async (req, res, next) => {
             `, [responderId, reportId]);
             console.log('✅ [UPDATE] Report status updated to "In Progress" and responder assigned');
             console.log('✅ [TRIGGER] trg_AfterUpdateReport fired - Status change logged');
-        } else if (!reports[0].ResponderID) {
+        } else if (reports[0].ResponderID === null || reports[0].ResponderID === undefined) {
             // If report doesn't have a responder yet, assign the current one
             console.log('🔄 [UPDATE] Assigning responder to report...');
             await db.query(`
