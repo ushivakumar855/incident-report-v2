@@ -8,10 +8,11 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Button, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { reportAPI, responderAPI } from '../services/api';
-import { formatDate, getStatusColor, handleAPIError } from '../utils/helpers';
+import { formatDate, handleAPIError } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import DashboardHeader from '../components/DashboardHeader';
+import { StatisticsCards, DetailedStatistics } from '../components/StatisticsCards';
 import { FaList, FaChartBar, FaFilter, FaUsers } from 'react-icons/fa';
 
 const ResponderDashboard = () => {
@@ -33,6 +34,7 @@ const ResponderDashboard = () => {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedStatus]);
 
     // ✅ FIXED: Proper calculation of statistics from actual report data
@@ -163,53 +165,12 @@ const ResponderDashboard = () => {
                     </Col>
                 </Row>
 
-                {/* Summary Cards - ✅ Now showing correct real-time data */}
-                <Row className="mb-4">
-                    <Col md={3} sm={6} className="mb-3">
-                        <Card 
-                            className="text-center bg-warning text-white shadow h-100"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('Pending')}
-                        >
-                            <Card.Body>
-                                <h3>{stats.pending}</h3>
-                                <p className="mb-0">Pending</p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3} sm={6} className="mb-3">
-                        <Card 
-                            className="text-center bg-info text-white shadow h-100"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('In Progress')}
-                        >
-                            <Card.Body>
-                                <h3>{stats.inProgress}</h3>
-                                <p className="mb-0">In Progress</p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3} sm={6} className="mb-3">
-                        <Card 
-                            className="text-center bg-success text-white shadow h-100"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedStatus('Resolved')}
-                        >
-                            <Card.Body>
-                                <h3>{stats.resolved}</h3>
-                                <p className="mb-0">Resolved</p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3} sm={6} className="mb-3">
-                        <Card className="text-center bg-secondary text-white shadow h-100">
-                            <Card.Body>
-                                <h3>{responders.length}</h3>
-                                <p className="mb-0">Responders</p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {/* Summary Cards - ✅ Now showing correct real-time data using shared component */}
+                <StatisticsCards 
+                    stats={{...stats, totalResponders: responders.length}}
+                    variant="responder"
+                    onCardClick={(status) => setSelectedStatus(status)}
+                />
 
                 {/* All Reports Section - Shown when button clicked */}
                 {showAllReports && (
@@ -290,7 +251,7 @@ const ResponderDashboard = () => {
                     </Row>
                 )}
 
-                {/* Statistics Section - Shown when button clicked */}
+                {/* Statistics Section - Shown when button clicked - Using shared component */}
                 {showStatistics && (
                     <Row className="mb-4">
                         <Col>
@@ -306,67 +267,7 @@ const ResponderDashboard = () => {
                                     </Button>
                                 </Card.Header>
                                 <Card.Body>
-                                    <Row>
-                                        <Col md={6} className="mb-4">
-                                            <Card className="border-primary">
-                                                <Card.Header className="bg-primary text-white">
-                                                    <h6 className="mb-0">Report Status Overview</h6>
-                                                </Card.Header>
-                                                <Card.Body>
-                                                    <Table borderless>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td><strong>Total Reports:</strong></td>
-                                                                <td><h4><Badge bg="primary">{stats.total}</Badge></h4></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><strong>Pending:</strong></td>
-                                                                <td><h4><Badge bg="warning">{stats.pending}</Badge></h4></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><strong>In Progress:</strong></td>
-                                                                <td><h4><Badge bg="info">{stats.inProgress}</Badge></h4></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><strong>Resolved:</strong></td>
-                                                                <td><h4><Badge bg="success">{stats.resolved}</Badge></h4></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><strong>Closed:</strong></td>
-                                                                <td><h4><Badge bg="secondary">{stats.closed}</Badge></h4></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </Table>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                        <Col md={6} className="mb-4">
-                                            <Card className="border-success">
-                                                <Card.Header className="bg-success text-white">
-                                                    <h6 className="mb-0">Response Metrics</h6>
-                                                </Card.Header>
-                                                <Card.Body>
-                                                    <div className="text-center mb-4">
-                                                        <h1 className="display-3 text-success">
-                                                            {stats.total > 0 
-                                                                ? Math.round((stats.resolved / stats.total) * 100)
-                                                                : 0}%
-                                                        </h1>
-                                                        <p className="text-muted">Resolution Rate</p>
-                                                    </div>
-                                                    <hr />
-                                                    <div className="text-center">
-                                                        <p className="mb-1"><strong>Active Cases:</strong></p>
-                                                        <h4>
-                                                            <Badge bg="info">
-                                                                {stats.pending + stats.inProgress}
-                                                            </Badge>
-                                                        </h4>
-                                                    </div>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    </Row>
+                                    <DetailedStatistics stats={stats} />
                                 </Card.Body>
                             </Card>
                         </Col>
