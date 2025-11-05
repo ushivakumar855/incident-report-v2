@@ -72,7 +72,7 @@ app.get('/', (req, res) => {
         message: 'Incident Reporting System API',
         version: '1.0.0',
         author: 'ushivakumar855',
-        database: 'myapp',
+        database: process.env.DB_NAME || 'incident_db1',
         timestamp: req.requestTime
     });
 });
@@ -184,8 +184,8 @@ const server = app.listen(PORT, () => {
     console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Server URL: http://localhost:${PORT}`);
     console.log(`📡 API URL: http://localhost:${PORT}/api`);
-    console.log(`🗄️  Database: myapp`);
-    console.log(`👤 User: ushivakumar855`);
+    console.log(`🗄️  Database: ${process.env.DB_NAME || 'incident_db1'}`);
+    console.log(`👤 User: ${process.env.DB_USER || 'root'}`);
     console.log('==========================================');
 });
 

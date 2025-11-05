@@ -10,18 +10,26 @@ const db = require('../config/db');
 // @access  Public
 exports.getAllActions = async (req, res, next) => {
     try {
+        console.log('📋 [ACTIONS] Fetching all actions...');
+        console.log('🔄 [JOIN QUERY] Combining actionstaken, responders, and reports tables...');
         const [actions] = await db.query(`
             SELECT 
-                a.*,
-                r.ResponderName,
-                r.Role AS ResponderRole,
+                a.ActionID,
+                a.ReportID,
+                a.ActionDescription,
+                a.Timestamp,
+                a.ActionType,
+                resp.Name AS ResponderName,
+                resp.Role AS ResponderRole,
                 rep.Description AS ReportDescription,
                 rep.Status AS ReportStatus
             FROM actionstaken a
-            JOIN responders r ON a.responderid = r.ResponderID
-            JOIN reports rep ON a.reportid = rep.ReportID
-            ORDER BY a.timestamp DESC
+            INNER JOIN responders resp ON a.ResponderID = resp.ResponderID
+            INNER JOIN reports rep ON a.ReportID = rep.ReportID
+            ORDER BY a.Timestamp DESC
         `);
+        
+        console.log(`✅ [JOIN QUERY] Retrieved ${actions.length} actions`);
         
         res.status(200).json({
             status: 'success',
@@ -29,7 +37,7 @@ exports.getAllActions = async (req, res, next) => {
             data: actions
         });
     } catch (error) {
-        console.error('Error in getAllActions:', error);
+        console.error('❌ [ERROR] Error in getAllActions:', error);
         next(error);
     }
 };
@@ -40,18 +48,26 @@ exports.getAllActions = async (req, res, next) => {
 exports.getActionsByReport = async (req, res, next) => {
     try {
         const { reportId } = req.params;
+        console.log(`📋 [ACTIONS] Fetching actions for report #${reportId}...`);
+        console.log('🔄 [JOIN QUERY] Combining actionstaken and responders tables...');
         
         const [actions] = await db.query(`
             SELECT 
-                a.*,
+                a.ActionID,
+                a.ReportID,
+                a.ActionDescription,
+                a.Timestamp,
+                a.ActionType,
                 resp.Name AS ResponderName,
                 resp.Role AS ResponderRole,
                 resp.ContactInfo AS ResponderContact
             FROM actionstaken a
-            JOIN responders resp ON a.responderid = resp.ResponderID
-            WHERE a.reportid = ?
-            ORDER BY a.timestamp DESC
+            INNER JOIN responders resp ON a.ResponderID = resp.ResponderID
+            WHERE a.ReportID = ?
+            ORDER BY a.Timestamp DESC
         `, [reportId]);
+        
+        console.log(`✅ [JOIN QUERY] Retrieved ${actions.length} actions for report #${reportId}`);
         
         res.status(200).json({
             status: 'success',
@@ -59,7 +75,7 @@ exports.getActionsByReport = async (req, res, next) => {
             data: actions
         });
     } catch (error) {
-        console.error('Error in getActionsByReport:', error);
+        console.error('❌ [ERROR] Error in getActionsByReport:', error);
         next(error);
     }
 };
@@ -69,14 +85,17 @@ exports.getActionsByReport = async (req, res, next) => {
 // @access  Protected (Responders)
 exports.createAction = async (req, res, next) => {
     try {
+        console.log('📝 [ACTION] Creating new action...');
         const {
             reportId,
             responderId,
-            actionDescription
+            actionDescription,
+            actionType = 'Investigation'
         } = req.body;
         
         // Validation
         if (!reportId || !responderId || !actionDescription) {
+            console.log('❌ [VALIDATION] Missing required fields');
             return res.status(400).json({
                 status: 'error',
                 message: 'ReportID, ResponderID, and ActionDescription are required'
@@ -90,6 +109,7 @@ exports.createAction = async (req, res, next) => {
         );
         
         if (reports.length === 0) {
+            console.log(`❌ [VALIDATION] Report #${reportId} not found`);
             return res.status(404).json({
                 status: 'error',
                 message: 'Report not found'
@@ -103,38 +123,53 @@ exports.createAction = async (req, res, next) => {
         );
         
         if (responders.length === 0) {
+            console.log(`❌ [VALIDATION] Responder #${responderId} not found`);
             return res.status(404).json({
                 status: 'error',
                 message: 'Responder not found'
             });
         }
         
-        // Insert action
-        const [result] = await db.query(`
-            INSERT INTO actionstaken (reportid, responderid, actiondescription, timestamp)
-            VALUES (?, ?, ?, NOW())
-        `, [reportId, responderId, actionDescription]);
+        // Use stored procedure to add action
+        console.log('⚙️ [STORED PROCEDURE] Calling sp_AddAction...');
+        console.log(`📋 Parameters: ReportID=${reportId}, ResponderID=${responderId}, ActionType=${actionType}`);
+        
+        await db.query(
+            'CALL sp_AddAction(?, ?, ?, ?)',
+            [reportId, responderId, actionDescription, actionType]
+        );
+        
+        console.log('✅ [STORED PROCEDURE] sp_AddAction executed successfully');
+        console.log('✅ [TRIGGER] trg_AfterInsertAction fired - Action logged in audit_log');
         
         // Update report status to 'In Progress' if it's 'Pending'
-        await db.query(`
-            UPDATE reports 
-            SET Status = CASE 
-                WHEN Status = 'Pending' THEN 'In Progress'
-                ELSE Status
-            END
-            WHERE ReportID = ?
-        `, [reportId]);
+        if (reports[0].Status === 'Pending') {
+            console.log('🔄 [UPDATE] Updating report status to "In Progress"...');
+            await db.query(`
+                UPDATE reports 
+                SET Status = 'In Progress'
+                WHERE ReportID = ?
+            `, [reportId]);
+            console.log('✅ [UPDATE] Report status updated to "In Progress"');
+            console.log('✅ [TRIGGER] trg_AfterUpdateReport fired - Status change logged');
+        }
         
         // Get the created action
         const [newAction] = await db.query(`
             SELECT 
-                a.*,
+                a.ActionID,
+                a.ReportID,
+                a.ActionDescription,
+                a.Timestamp,
+                a.ActionType,
                 resp.Name AS ResponderName,
                 resp.Role AS ResponderRole
             FROM actionstaken a
-            JOIN responders resp ON a.responderid = resp.ResponderID
-            WHERE a.actionid = ?
-        `, [result.insertId]);
+            INNER JOIN responders resp ON a.ResponderID = resp.ResponderID
+            WHERE a.ReportID = ?
+            ORDER BY a.Timestamp DESC
+            LIMIT 1
+        `, [reportId]);
         
         res.status(201).json({
             status: 'success',
@@ -142,7 +177,7 @@ exports.createAction = async (req, res, next) => {
             data: newAction[0]
         });
     } catch (error) {
-        console.error('Error in createAction:', error);
+        console.error('❌ [ERROR] Error in createAction:', error);
         next(error);
     }
 };
@@ -153,33 +188,42 @@ exports.createAction = async (req, res, next) => {
 exports.getActionById = async (req, res, next) => {
     try {
         const { id } = req.params;
+        console.log(`🔍 [ACTION] Fetching action #${id}...`);
+        console.log('🔄 [JOIN QUERY] Combining actionstaken, responders, and reports tables...');
         
         const [actions] = await db.query(`
             SELECT 
-                a.*,
+                a.ActionID,
+                a.ReportID,
+                a.ActionDescription,
+                a.Timestamp,
+                a.ActionType,
                 resp.Name AS ResponderName,
                 resp.Role AS ResponderRole,
                 resp.ContactInfo AS ResponderContact,
                 rep.Description AS ReportDescription
             FROM actionstaken a
-            JOIN responders resp ON a.responderid = resp.ResponderID
-            JOIN reports rep ON a.reportid = rep.ReportID
-            WHERE a.actionid = ?
+            INNER JOIN responders resp ON a.ResponderID = resp.ResponderID
+            INNER JOIN reports rep ON a.ReportID = rep.ReportID
+            WHERE a.ActionID = ?
         `, [id]);
         
         if (actions.length === 0) {
+            console.log(`❌ [NOT FOUND] Action #${id} not found`);
             return res.status(404).json({
                 status: 'error',
                 message: 'Action not found'
             });
         }
         
+        console.log(`✅ [JOIN QUERY] Retrieved action #${id}`);
+        
         res.status(200).json({
             status: 'success',
             data: actions[0]
         });
     } catch (error) {
-        console.error('Error in getActionById:', error);
+        console.error('❌ [ERROR] Error in getActionById:', error);
         next(error);
     }
 };

@@ -40,7 +40,7 @@ pool.getConnection((err, connection) => {
     }
     
     if (connection) {
-        console.log('✅ MySQL connected to database: myapp');
+        console.log('✅ MySQL connected to database:', process.env.DB_NAME || 'incident_db1');
         connection.release();
     }
 });
